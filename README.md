@@ -1,1 +1,1 @@
-# medium_pytest
+# pytest_with_databricks_asset_bundles
