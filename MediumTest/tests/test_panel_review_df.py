@@ -7,10 +7,22 @@ from pyspark.testing import assertDataFrameEqual, assertSchemaEqual
 # import the module
 from source_panel_review_df import *
 
-spark = SparkSession.builder.getOrCreate()
+@pytest.fixture(scope="session")
+def spark():
+    """fixture for creating a spark session
+    Args:
+        request: pytest.FixtureRequest object
+    """
+    
+    spark = (
+        SparkSession.builder
+        .appName("pytest-pyspark-local-testing")
+        .getOrCreate()
+    )
+    return spark
 
 @pytest.fixture(scope="function")
-def df():
+def df(spark):
   schema = "id int, name string, email string, price int"
   df = spark.createDataFrame([(1, "Dario" , "dario.test@databricks.com"   , 3)
                             , (2, "Andrea", "andrea.mock@snowflake.fk.edu", 7)
@@ -21,14 +33,14 @@ def df():
   return df
 
 @pytest.fixture(scope="function")
-def empty_df():
+def empty_df(spark):
   schema = "id int, email string, price int"
   df = spark.createDataFrame([], schema=schema)
   return df
 
 ################################################################
 # testing function add_current_date_column
-def test_AddCurrentDateColumn(df):
+def test_AddCurrentDateColumn(spark, df):
   new_df = df.transform(add_current_date_column)
 
   today = datetime.datetime.today().date()
@@ -42,7 +54,7 @@ def test_AddCurrentDateColumn(df):
   assertSchemaEqual(new_df.schema, expected_df.schema)
   assertDataFrameEqual(new_df, expected_df)
 
-def test_AddCurrentDateColumn_toEmptyDf(empty_df):
+def test_AddCurrentDateColumn_toEmptyDf(spark, empty_df):
   new_df = empty_df.transform(add_current_date_column)
 
   expected_schema = "id int, email string, price int, current_dt date"
@@ -52,7 +64,7 @@ def test_AddCurrentDateColumn_toEmptyDf(empty_df):
 
 ################################################################
 # testing function get_domainName_fromCol
-def test_GetDomainNameFromCol(df):
+def test_GetDomainNameFromCol(spark, df):
   new_df = get_domainName_fromCol(df, "email")
 
   expected_schema = "id int, name string, email string, price int, domainName string"
@@ -69,7 +81,7 @@ def test_GetDomainNameFromCol_ifColumnNotExist(df):
   with pytest.raises(Exception):
     get_domainName_fromCol(df, "fake_column")
 
-def test_GetDomainNameFromCol_toEmptyDf(empty_df):
+def test_GetDomainNameFromCol_toEmptyDf(spark, empty_df):
   new_df = get_domainName_fromCol(empty_df, "email")
 
   expected_schema = "id int, email string, price int, domainName string"
@@ -79,7 +91,7 @@ def test_GetDomainNameFromCol_toEmptyDf(empty_df):
 
 ################################################################
 # testing function compute_sum_fromCol
-def test_ComputeSumFromCol(df):
+def test_ComputeSumFromCol(spark, df):
   new_df = compute_sum_fromCol(df, "price")
 
   expected_schema = "total_sum long"
@@ -91,16 +103,10 @@ def test_ComputeSumFromCol_ifColumnNotExist(df):
   with pytest.raises(Exception):
     compute_sum_fromCol(df, "fake_column")
 
-def test_ComputeSumFromCol_toEmptyDf(empty_df):
+def test_ComputeSumFromCol_toEmptyDf(spark, empty_df):
   new_df = compute_sum_fromCol(empty_df, "price")
 
   expected_schema = "total_sum long"
   expected_df = spark.createDataFrame([(None,)], schema=expected_schema)
   assertSchemaEqual(new_df.schema, expected_df.schema)
   assertDataFrameEqual(new_df, expected_df)
-  
-  
-
-
-
-
