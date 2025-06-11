@@ -1,4 +1,4 @@
-# pytest_easy
+# PyTest with Databricks
 
 **pytest_easy** is a minimal and practical example of how to run unit tests on **Databricks notebooks** using `pytest`, without the need to access the terminal or CLI. It supports both **PySpark** functions and classic Python logic, making it ideal for data engineers and scientists working in distributed environments.
 
