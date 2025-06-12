@@ -22,5 +22,8 @@ This repo is designed for those who:
 Install dependencies directly at Databricks notebook level:
 
 ```bash
-pip install pytest
+pip install pytest==8.3.4
 ```
+
+## ⚙️ Tested
+The notebook "run_unit_tests" has been tested with Databricks Runtime 15.4 and Serverless
